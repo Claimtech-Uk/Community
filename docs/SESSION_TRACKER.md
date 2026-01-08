@@ -6,7 +6,7 @@
 ---
 
 ## Current Chunk
-Module 2 Complete! Next: Module 3 (Video Integration)
+Module 3 Complete! Next: Module 4 (Payments)
 
 ---
 
@@ -22,6 +22,8 @@ Module 2 Complete! Next: Module 3 (Video Integration)
 | 7 | 2.2 Admin CMS Interface | 2025-01-08 | ~25 min | Module/lesson CRUD UI, TipTap editor, drag-drop reorder |
 | 8 | 2.3 User Course Display | 2025-01-08 | ~15 min | Dashboard modules, module/lesson pages, TipTap renderer |
 | 9 | 2.4 Asset Management | 2025-01-08 | ~15 min | Vercel Blob upload, asset CRUD, download links |
+| 10 | 3.1 Mux Upload & Webhooks | 2025-01-08 | ~20 min | Mux SDK, upload URL endpoint, webhook handler |
+| 11 | 3.2 Video Player & Signed URLs | 2025-01-08 | ~15 min | JWT signing, Mux Player component, locked states |
 
 ---
 

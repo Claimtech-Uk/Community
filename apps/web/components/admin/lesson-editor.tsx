@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import { updateLessonAction } from "@/app/actions";
 import { AssetUpload } from "./asset-upload";
+import { VideoUpload } from "./video-upload";
 import type { Prisma } from "@prisma/client";
 
 // Dynamic import TipTap to reduce initial bundle size
@@ -29,6 +30,9 @@ interface Lesson {
   content: Prisma.JsonValue;
   published: boolean;
   isFree: boolean;
+  muxAssetId?: string | null;
+  muxPlaybackId?: string | null;
+  videoDuration?: number | null;
   module: {
     id: string;
     title: string;
@@ -184,6 +188,17 @@ export function LessonEditor({ lesson }: LessonEditorProps) {
             (accessible without subscription)
           </span>
         </label>
+      </div>
+
+      {/* Video Upload */}
+      <div className="rounded-lg border p-4">
+        <VideoUpload
+          lessonId={lesson.id}
+          currentAssetId={lesson.muxAssetId}
+          currentPlaybackId={lesson.muxPlaybackId}
+          videoDuration={lesson.videoDuration}
+          onUploadComplete={() => router.refresh()}
+        />
       </div>
 
       {/* Content Editor */}

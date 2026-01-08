@@ -7,3 +7,5 @@ export { LessonList } from "./lesson-list";
 export { LessonItem } from "./lesson-item";
 export { CreateLessonButton } from "./create-lesson-button";
 export { LessonEditor } from "./lesson-editor";
+export { VideoUpload } from "./video-upload";
+export { AssetUpload } from "./asset-upload";

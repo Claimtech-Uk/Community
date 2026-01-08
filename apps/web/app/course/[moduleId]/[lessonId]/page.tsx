@@ -3,7 +3,15 @@ import Link from "next/link";
 
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { TipTapRenderer, LessonList, AssetList } from "@/components/course";
+import { getPlaybackToken } from "@/lib/mux";
+import { 
+  TipTapRenderer, 
+  LessonList, 
+  AssetList,
+  VideoPlayer,
+  VideoLocked,
+  VideoPlaceholder,
+} from "@/components/course";
 import type { JSONContent } from "@tiptap/react";
 
 interface LessonPageProps {
@@ -132,30 +140,24 @@ export default async function LessonPage({ params }: LessonPageProps) {
 
             {hasAccess ? (
               <>
-                {/* Video placeholder - actual player in Module 3 */}
-                <div className="aspect-video rounded-xl bg-muted flex items-center justify-center mb-8 border">
-                  <div className="text-center text-muted-foreground">
-                    <svg
-                      className="h-12 w-12 mx-auto mb-2"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={1.5}
-                        d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"
-                      />
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={1.5}
-                        d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                      />
-                    </svg>
-                    <p className="text-sm">Video player coming soon</p>
-                  </div>
+                {/* Video player */}
+                <div className="mb-8">
+                  {lesson.muxPlaybackId ? (
+                    (() => {
+                      const playbackToken = getPlaybackToken(lesson.muxPlaybackId);
+                      return playbackToken ? (
+                        <VideoPlayer
+                          playbackId={lesson.muxPlaybackId}
+                          playbackToken={playbackToken}
+                          title={lesson.title}
+                        />
+                      ) : (
+                        <VideoPlaceholder />
+                      );
+                    })()
+                  ) : (
+                    <VideoPlaceholder />
+                  )}
                 </div>
 
                 {/* Lesson content */}
@@ -181,28 +183,18 @@ export default async function LessonPage({ params }: LessonPageProps) {
                 </div>
               </>
             ) : (
-              /* Paywall placeholder - actual implementation in Module 4/5 */
-              <div className="rounded-xl border-2 border-dashed p-12 text-center">
-                <svg
-                  className="h-12 w-12 mx-auto text-muted-foreground mb-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={1.5}
-                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
-                  />
-                </svg>
-                <h2 className="text-xl font-semibold mb-2">Premium Content</h2>
-                <p className="text-muted-foreground mb-6">
-                  Subscribe to access this lesson and all course content.
-                </p>
-                <button className="rounded-md bg-primary px-6 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90">
-                  Subscribe Now
-                </button>
+              /* Paywall - actual implementation in Module 4/5 */
+              <div className="space-y-6">
+                <VideoLocked />
+                <div className="rounded-lg border bg-card p-6 text-center">
+                  <h2 className="text-xl font-semibold mb-2">Premium Content</h2>
+                  <p className="text-muted-foreground mb-6">
+                    Subscribe to access this lesson and all course content.
+                  </p>
+                  <button className="rounded-md bg-primary px-6 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90">
+                    Subscribe Now
+                  </button>
+                </div>
               </div>
             )}
 
