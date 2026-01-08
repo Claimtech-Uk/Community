@@ -1,0 +1,26 @@
+{
+  "name": "ai-systems-architect",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "lint": "turbo lint",
+    "db:push": "npm run db:push --workspace=@repo/database",
+    "db:generate": "npm run db:generate --workspace=@repo/database",
+    "db:studio": "npm run db:studio --workspace=@repo/database",
+    "db:migrate": "npm run db:migrate --workspace=@repo/database",
+    "clean": "rm -rf node_modules apps/*/node_modules packages/*/node_modules"
+  },
+  "devDependencies": {
+    "turbo": "^2.3.0"
+  },
+  "packageManager": "npm@10.0.0",
+  "dependencies": {
+    "@prisma/client": "^5.22.0"
+  }
+}
