@@ -40,8 +40,8 @@ export const stripe = {
 // Price IDs from Stripe Dashboard
 // These should be created in Stripe and the IDs stored in environment variables
 export const STRIPE_PRICES = {
-  MONTHLY: process.env.STRIPE_PRICE_MONTHLY!,
-  ANNUAL: process.env.STRIPE_PRICE_ANNUAL!,
+  MONTHLY: process.env.STRIPE_MONTHLY_PRICE_ID!,
+  ANNUAL: process.env.STRIPE_ANNUAL_PRICE_ID!,
 } as const;
 
 // Price amounts in pence (for display purposes)

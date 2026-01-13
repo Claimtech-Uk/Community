@@ -2,6 +2,7 @@
 
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 interface Asset {
   id: string;
@@ -41,6 +42,7 @@ export function AssetUpload({ lessonId, assets: initialAssets }: AssetUploadProp
   const [assets, setAssets] = useState<Asset[]>(initialAssets);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadingFileName, setUploadingFileName] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
@@ -50,6 +52,7 @@ export function AssetUpload({ lessonId, assets: initialAssets }: AssetUploadProp
 
     setIsUploading(true);
     setUploadProgress(0);
+    setUploadingFileName(file.name);
     setError(null);
 
     try {
@@ -83,6 +86,7 @@ export function AssetUpload({ lessonId, assets: initialAssets }: AssetUploadProp
     } finally {
       setIsUploading(false);
       setUploadProgress(0);
+      setUploadingFileName(null);
       if (fileInputRef.current) {
         fileInputRef.current.value = "";
       }
@@ -136,14 +140,22 @@ export function AssetUpload({ lessonId, assets: initialAssets }: AssetUploadProp
 
       {/* Upload progress */}
       {isUploading && (
-        <div className="space-y-1">
+        <div className="rounded-lg border bg-primary/5 p-4 space-y-3">
+          <div className="flex items-center gap-3">
+            <LoadingSpinner size="sm" />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium truncate">
+                Uploading to S3: {uploadingFileName}
+              </p>
+              <p className="text-xs text-muted-foreground">{uploadProgress}% complete</p>
+            </div>
+          </div>
           <div className="h-2 rounded-full bg-muted overflow-hidden">
             <div
-              className="h-full bg-primary transition-all"
+              className="h-full bg-primary transition-all duration-300"
               style={{ width: `${uploadProgress}%` }}
             />
           </div>
-          <p className="text-xs text-muted-foreground">Uploading... {uploadProgress}%</p>
         </div>
       )}
 
@@ -189,10 +201,7 @@ export function AssetUpload({ lessonId, assets: initialAssets }: AssetUploadProp
                 title="Delete asset"
               >
                 {deletingId === asset.id ? (
-                  <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                  </svg>
+                  <LoadingSpinner size="sm" />
                 ) : (
                   <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -206,7 +215,7 @@ export function AssetUpload({ lessonId, assets: initialAssets }: AssetUploadProp
 
       {/* Help text */}
       <p className="text-xs text-muted-foreground">
-        Supported: PDF, TXT, MD, JSON, PNG, JPG, GIF, WebP, ZIP (max 10MB)
+        Supported: PDF, TXT, MD, JSON, PNG, JPG, GIF, WebP, ZIP (max 10MB) • Stored on AWS S3
       </p>
     </div>
   );

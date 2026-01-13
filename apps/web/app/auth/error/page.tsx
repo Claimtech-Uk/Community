@@ -6,7 +6,7 @@ import { Suspense } from "react";
 
 const errorMessages: Record<string, string> = {
   Configuration: "There is a problem with the server configuration.",
-  AccessDenied: "You do not have access to sign in.",
+  AccessDenied: "Google OAuth is in testing mode. Your email needs to be added as a test user in Google Cloud Console, or the app needs to be published.",
   Verification: "The verification link has expired or has already been used.",
   Default: "An error occurred during authentication.",
   OAuthSignin: "Error starting the OAuth sign in flow.",

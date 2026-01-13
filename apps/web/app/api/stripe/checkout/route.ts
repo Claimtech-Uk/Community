@@ -12,11 +12,22 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { priceId } = body;
+    const { plan } = body;
 
-    // Validate price ID
-    if (!priceId || ![STRIPE_PRICES.MONTHLY, STRIPE_PRICES.ANNUAL].includes(priceId)) {
-      return NextResponse.json({ error: "Invalid price ID" }, { status: 400 });
+    // Validate plan
+    if (!plan || !["monthly", "annual"].includes(plan)) {
+      return NextResponse.json({ error: "Invalid plan" }, { status: 400 });
+    }
+
+    // Get price ID from environment
+    const priceId = plan === "monthly" ? STRIPE_PRICES.MONTHLY : STRIPE_PRICES.ANNUAL;
+    
+    if (!priceId) {
+      console.error(`Missing price ID for plan: ${plan}`, {
+        MONTHLY: STRIPE_PRICES.MONTHLY,
+        ANNUAL: STRIPE_PRICES.ANNUAL,
+      });
+      return NextResponse.json({ error: "Price not configured" }, { status: 500 });
     }
 
     // Get user from database
@@ -59,8 +70,8 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Determine the plan from price ID
-    const plan = priceId === STRIPE_PRICES.ANNUAL ? "ANNUAL" : "MONTHLY";
+    // Convert plan to uppercase for metadata
+    const planType = plan === "annual" ? "ANNUAL" : "MONTHLY";
 
     // Create checkout session
     const checkoutSession = await stripe.checkout.sessions.create({
@@ -77,12 +88,12 @@ export async function POST(request: NextRequest) {
       cancel_url: `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/pricing`,
       metadata: {
         userId: user.id,
-        plan,
+        plan: planType,
       },
       subscription_data: {
         metadata: {
           userId: user.id,
-          plan,
+          plan: planType,
         },
       },
       allow_promotion_codes: true,

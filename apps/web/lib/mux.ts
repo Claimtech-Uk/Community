@@ -1,16 +1,80 @@
 import Mux from "@mux/mux-node";
 import jwt from "jsonwebtoken";
 
-// Initialize Mux client with API credentials
-const mux = new Mux({
-  tokenId: process.env.MUX_TOKEN_ID!,
-  tokenSecret: process.env.MUX_TOKEN_SECRET!,
-});
+/**
+ * Check if Mux is configured with required credentials
+ */
+export function isMuxConfigured(): boolean {
+  return !!(process.env.MUX_TOKEN_ID && process.env.MUX_TOKEN_SECRET);
+}
 
-export const { video } = mux;
+/**
+ * Check if Mux signing keys are configured (for signed playback)
+ */
+export function isMuxSigningConfigured(): boolean {
+  return !!(process.env.MUX_SIGNING_KEY_ID && process.env.MUX_SIGNING_PRIVATE_KEY);
+}
 
-// Export the webhook utilities
-export { mux };
+/**
+ * Get Mux configuration status for display
+ */
+export function getMuxConfigStatus(): {
+  configured: boolean;
+  signingConfigured: boolean;
+  missing: string[];
+} {
+  const missing: string[] = [];
+  
+  if (!process.env.MUX_TOKEN_ID) missing.push("MUX_TOKEN_ID");
+  if (!process.env.MUX_TOKEN_SECRET) missing.push("MUX_TOKEN_SECRET");
+  if (!process.env.MUX_SIGNING_KEY_ID) missing.push("MUX_SIGNING_KEY_ID");
+  if (!process.env.MUX_SIGNING_PRIVATE_KEY) missing.push("MUX_SIGNING_PRIVATE_KEY");
+  
+  return {
+    configured: isMuxConfigured(),
+    signingConfigured: isMuxSigningConfigured(),
+    missing,
+  };
+}
+
+// Initialize Mux client with API credentials (lazy to avoid errors when not configured)
+let muxClient: Mux | null = null;
+
+function getMuxClient(): Mux | null {
+  if (muxClient) return muxClient;
+  
+  if (!isMuxConfigured()) {
+    return null;
+  }
+  
+  muxClient = new Mux({
+    tokenId: process.env.MUX_TOKEN_ID!,
+    tokenSecret: process.env.MUX_TOKEN_SECRET!,
+  });
+  
+  return muxClient;
+}
+
+// Export video API (may be null if not configured)
+export const video = {
+  get uploads() {
+    const client = getMuxClient();
+    if (!client) {
+      throw new Error("Mux not configured - MUX_TOKEN_ID and MUX_TOKEN_SECRET are required");
+    }
+    return client.video.uploads;
+  },
+  get assets() {
+    const client = getMuxClient();
+    if (!client) {
+      throw new Error("Mux not configured - MUX_TOKEN_ID and MUX_TOKEN_SECRET are required");
+    }
+    return client.video.assets;
+  },
+};
+
+// Export the mux client getter
+export { getMuxClient as mux };
 
 /**
  * Generate a signed playback URL for Mux video

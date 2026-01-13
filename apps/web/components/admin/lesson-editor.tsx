@@ -50,7 +50,6 @@ export function LessonEditor({ lesson }: LessonEditorProps) {
   const [title, setTitle] = useState(lesson.title);
   const [content, setContent] = useState<Prisma.JsonValue>(lesson.content);
   const [isFree, setIsFree] = useState(lesson.isFree);
-  const [isPublished, setIsPublished] = useState(lesson.published);
   const [isSaving, setIsSaving] = useState(false);
   const [isDirty, setIsDirty] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -65,11 +64,15 @@ export function LessonEditor({ lesson }: LessonEditorProps) {
     setIsSaving(true);
     setError(null);
 
+    // Serialize content to plain object (Server Actions require plain objects)
+    const serializedContent = content ? JSON.parse(JSON.stringify(content)) : undefined;
+
+    // Always auto-publish on save
     const result = await updateLessonAction(lesson.id, {
       title,
-      content: content as Prisma.InputJsonValue | undefined,
+      content: serializedContent,
       isFree,
-      published: isPublished,
+      published: true,
     });
 
     if (result.error) {
@@ -84,31 +87,16 @@ export function LessonEditor({ lesson }: LessonEditorProps) {
     router.refresh();
   }
 
-  async function handlePublishToggle() {
-    const newPublished = !isPublished;
-    setIsPublished(newPublished);
-    setIsDirty(true);
-  }
-
   return (
     <div className="space-y-6">
-      {/* Status Bar */}
+      {/* Simple Status Bar */}
       <div className="flex items-center justify-between rounded-lg border bg-muted/30 p-3">
         <div className="flex items-center gap-4 text-sm">
           {/* Status badges */}
           <div className="flex items-center gap-2">
-            {isPublished ? (
-              <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-700 dark:bg-green-900/30 dark:text-green-400">
-                Published
-              </span>
-            ) : (
-              <span className="inline-flex items-center rounded-full bg-yellow-100 px-2.5 py-0.5 text-xs font-medium text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400">
-                Draft
-              </span>
-            )}
             {isFree && (
               <span className="inline-flex items-center rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
-                Free
+                Free Lesson
               </span>
             )}
           </div>
@@ -118,31 +106,19 @@ export function LessonEditor({ lesson }: LessonEditorProps) {
             <span className="text-muted-foreground">Unsaved changes</span>
           )}
           {lastSaved && !isDirty && (
-            <span className="text-muted-foreground">
-              Saved at {lastSaved.toLocaleTimeString()}
+            <span className="text-green-600 dark:text-green-400">
+              ✓ Saved at {lastSaved.toLocaleTimeString()}
             </span>
           )}
         </div>
 
-        <div className="flex items-center gap-2">
-          <button
-            onClick={handlePublishToggle}
-            className={`rounded-md px-3 py-1.5 text-sm font-medium ${
-              isPublished
-                ? "bg-yellow-100 text-yellow-700 hover:bg-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-400"
-                : "bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900/30 dark:text-green-400"
-            }`}
-          >
-            {isPublished ? "Unpublish" : "Publish"}
-          </button>
-          <button
-            onClick={handleSave}
-            disabled={isSaving || !isDirty}
-            className="rounded-md bg-primary px-4 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isSaving ? "Saving..." : "Save"}
-          </button>
-        </div>
+        <button
+          onClick={handleSave}
+          disabled={isSaving || !isDirty}
+          className="rounded-md bg-primary px-4 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {isSaving ? "Saving..." : "Save"}
+        </button>
       </div>
 
       {/* Error */}

@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { Toaster } from "sonner";
+import { Suspense } from "react";
 
 import { Providers } from "@/components/providers";
+import { NavigationProgress } from "@/components/ui/navigation-progress";
 
 import "./globals.css";
 
@@ -21,6 +23,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
+        <Suspense fallback={null}>
+          <NavigationProgress />
+        </Suspense>
         <Providers>{children}</Providers>
         <Toaster richColors position="top-right" />
       </body>

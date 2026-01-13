@@ -21,6 +21,7 @@
   },
   "packageManager": "npm@10.0.0",
   "dependencies": {
-    "@prisma/client": "^5.22.0"
+    "@prisma/client": "^5.22.0",
+    "ngrok": "^5.0.0-beta.2"
   }
 }

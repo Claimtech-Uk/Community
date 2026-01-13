@@ -1,7 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { put, del } from "@vercel/blob";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import {
+  uploadToS3,
+  deleteFromS3ByUrl,
+  generateAssetKey,
+  isS3Configured,
+} from "@/lib/s3";
 
 // Allowed file types
 const ALLOWED_TYPES = [
@@ -26,6 +31,14 @@ export async function POST(request: NextRequest) {
     const session = await auth();
     if (!session?.user || session.user.role !== "ADMIN") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Check S3 configuration
+    if (!isS3Configured()) {
+      return NextResponse.json(
+        { error: "S3 storage not configured. Please set AWS credentials." },
+        { status: 500 }
+      );
     }
 
     const formData = await request.formData();
@@ -65,17 +78,21 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Lesson not found" }, { status: 404 });
     }
 
-    // Upload to Vercel Blob
-    const blob = await put(`assets/${lessonId}/${file.name}`, file, {
-      access: "public",
-    });
+    // Convert file to buffer
+    const buffer = Buffer.from(await file.arrayBuffer());
+
+    // Generate unique S3 key
+    const key = generateAssetKey(lessonId, file.name);
+
+    // Upload to S3
+    const url = await uploadToS3(key, buffer, file.type);
 
     // Create asset record
     const asset = await prisma.asset.create({
       data: {
         lessonId,
         filename: file.name,
-        url: blob.url,
+        url: url,
         size: file.size,
         mimeType: file.type,
       },
@@ -85,7 +102,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("Upload error:", error);
     return NextResponse.json(
-      { error: "Failed to upload file" },
+      { error: "Failed to upload file. Please check S3 configuration." },
       { status: 500 }
     );
   }
@@ -115,12 +132,12 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: "Asset not found" }, { status: 404 });
     }
 
-    // Delete from Vercel Blob
+    // Delete from S3
     try {
-      await del(asset.url);
-    } catch (blobError) {
-      console.error("Blob delete error:", blobError);
-      // Continue with database deletion even if blob delete fails
+      await deleteFromS3ByUrl(asset.url);
+    } catch (s3Error) {
+      console.error("S3 delete error:", s3Error);
+      // Continue with database deletion even if S3 delete fails
     }
 
     // Delete asset record

@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { CheckCircleIcon, CircleIcon, PlayCircleIcon, LockIcon } from "lucide-react";
 
 interface Lesson {
   id: string;
@@ -24,37 +23,30 @@ export function LessonList({
 }: LessonListProps) {
   if (lessons.length === 0) {
     return (
-      <div className="rounded-lg border border-dashed p-8 text-center">
+      <div className="rounded-xl glass border-dashed border-2 border-border p-8 text-center">
         <div className="text-muted-foreground">
-          <svg
-            className="mx-auto h-10 w-10 mb-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={1.5}
-              d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
-            />
-          </svg>
+          <div className="w-12 h-12 rounded-xl bg-muted flex items-center justify-center mx-auto mb-4">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+            </svg>
+          </div>
           <p className="font-medium">Content coming soon</p>
-          <p className="text-sm mt-1">Lessons are being prepared for this module.</p>
+          <p className="text-sm mt-1">Lessons are being prepared.</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-2">
-      {lessons.map((lesson) => (
+    <div className="space-y-1">
+      {lessons.map((lesson, index) => (
         <LessonItem
           key={lesson.id}
           lesson={lesson}
           moduleId={moduleId}
           isActive={lesson.id === currentLessonId}
           isCompleted={completedLessonIds.has(lesson.id)}
+          index={index}
         />
       ))}
     </div>
@@ -71,72 +63,75 @@ function LessonItem({
   moduleId: string;
   isActive: boolean;
   isCompleted: boolean;
+  index: number;
 }) {
-  // For now, all lessons are accessible for testing
-  // TODO: Integrate with module gating in Chunk 18
-  const hasAccess = true;
-
   return (
     <Link
       href={`/course/${moduleId}/${lesson.id}`}
-      className={`flex items-center gap-3 rounded-lg border p-4 transition-all ${
+      className={`group flex items-center gap-3 rounded-lg p-3 transition-all ${
         isActive
-          ? "border-primary bg-primary/5"
-          : isCompleted
-          ? "border-green-200 hover:border-green-300 dark:border-green-900/50"
-          : "hover:border-primary/50 hover:bg-muted/50"
+          ? "bg-primary/10 border border-primary/30"
+          : "hover:bg-muted/50 border border-transparent"
       }`}
     >
-      {/* Completion / lesson number indicator */}
-      {isCompleted ? (
-        <span className="flex h-8 w-8 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
-          <CheckCircleIcon className="h-5 w-5 text-green-600" />
-        </span>
-      ) : (
-        <span
-          className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-medium ${
-            isActive
-              ? "bg-primary text-primary-foreground"
-              : "bg-muted text-muted-foreground"
-          }`}
-        >
-          {lesson.order}
-        </span>
-      )}
+      {/* Lesson number / completion indicator */}
+      <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm font-medium shrink-0 transition-colors ${
+        isCompleted
+          ? "bg-emerald-500/20 text-emerald-400"
+          : isActive
+            ? "bg-primary text-primary-foreground"
+            : "bg-muted/50 text-muted-foreground group-hover:bg-muted"
+      }`}>
+        {isCompleted ? (
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+          </svg>
+        ) : (
+          lesson.order
+        )}
+      </div>
 
       {/* Lesson info */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <span
-            className={`font-medium truncate ${
-              isActive ? "text-primary" : isCompleted ? "text-green-700 dark:text-green-400" : ""
-            }`}
-          >
+          <span className={`text-sm font-medium truncate transition-colors ${
+            isActive 
+              ? "text-primary" 
+              : isCompleted 
+                ? "text-emerald-400" 
+                : "group-hover:text-foreground"
+          }`}>
             {lesson.title}
           </span>
+        </div>
+        <div className="flex items-center gap-2 mt-0.5">
+          {lesson.videoDuration && (
+            <span className="text-xs text-muted-foreground">
+              {formatDuration(lesson.videoDuration)}
+            </span>
+          )}
           {lesson.isFree && (
-            <span className="inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
+            <span className="text-xs px-1.5 py-0.5 rounded bg-primary/20 text-primary font-medium">
               Free
             </span>
           )}
         </div>
-        {lesson.videoDuration && (
-          <span className="text-xs text-muted-foreground">
-            {formatDuration(lesson.videoDuration)}
-          </span>
-        )}
       </div>
 
-      {/* Status indicator */}
-      <div className="flex items-center">
-        {!hasAccess ? (
-          <LockIcon className="h-5 w-5 text-muted-foreground" />
+      {/* Play indicator */}
+      <div className="shrink-0">
+        {isActive ? (
+          <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center">
+            <svg className="w-3 h-3 text-primary-foreground ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M8 5v14l11-7z" />
+            </svg>
+          </div>
         ) : isCompleted ? (
-          <span className="text-xs font-medium text-green-600">Done</span>
-        ) : isActive ? (
-          <PlayCircleIcon className="h-5 w-5 text-primary" />
+          <span className="text-xs text-emerald-400 font-medium">Done</span>
         ) : (
-          <CircleIcon className="h-5 w-5 text-muted-foreground" />
+          <svg className="w-5 h-5 text-muted-foreground/50 group-hover:text-muted-foreground transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+          </svg>
         )}
       </div>
     </Link>

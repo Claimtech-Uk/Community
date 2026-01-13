@@ -28,7 +28,7 @@ export async function createLesson(data: {
       moduleId: data.moduleId,
       title: data.title,
       content: data.content ?? Prisma.JsonNull,
-      published: data.published ?? false,
+      published: true, // Always auto-publish
       isFree: data.isFree ?? false,
       order: nextOrder,
     },

@@ -23,7 +23,7 @@ export async function createModule(data: {
     data: {
       title: data.title,
       description: data.description,
-      published: data.published ?? false,
+      published: true, // Always auto-publish
       order: nextOrder,
     },
   });

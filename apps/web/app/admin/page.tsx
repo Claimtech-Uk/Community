@@ -8,7 +8,6 @@ import {
 } from "@/lib/data";
 
 export default async function AdminDashboardPage() {
-  // Fetch all metrics in parallel
   const [metrics, funnel, activity, content, emailStats] = await Promise.all([
     getDashboardMetrics(),
     getConversionFunnel("30d"),
@@ -18,65 +17,65 @@ export default async function AdminDashboardPage() {
   ]);
 
   return (
-    <div className="p-8">
-      <div className="max-w-6xl mx-auto">
-        <h1 className="text-3xl font-bold tracking-tight mb-2">
-          Admin Dashboard
-        </h1>
-        <p className="text-muted-foreground mb-8">
-          Business metrics and platform overview
-        </p>
+    <div className="p-6 lg:p-8">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Admin Dashboard</h1>
+            <p className="text-muted-foreground mt-1">
+              Business metrics and platform overview
+            </p>
+          </div>
+          <Link
+            href="/dashboard"
+            className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+            Back to Course
+          </Link>
+        </div>
 
         {/* Key Metrics */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <MetricCard
             title="Monthly Revenue"
             value={metrics.mrrFormatted}
             subtext="MRR"
-            icon={
-              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            }
+            icon="💰"
+            gradient="from-emerald-500/20 to-emerald-500/5"
           />
           <MetricCard
             title="Active Subscribers"
             value={metrics.activeSubscribers.toString()}
-            subtext={`${metrics.conversionRate}% of users`}
-            icon={
-              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-              </svg>
-            }
+            subtext={`${metrics.conversionRate}% conversion`}
+            icon="👥"
+            gradient="from-primary/20 to-primary/5"
           />
           <MetricCard
             title="Total Users"
             value={metrics.totalUsers.toString()}
-            subtext={`${activity.newUsers} new this week`}
-            icon={
-              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-              </svg>
-            }
+            subtext={`+${activity.newUsers} this week`}
+            icon="📈"
+            gradient="from-blue-500/20 to-blue-500/5"
           />
           <MetricCard
             title="Avg. Progress"
             value={`${metrics.averageProgress}%`}
             subtext="course completion"
-            icon={
-              <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-              </svg>
-            }
+            icon="🎯"
+            gradient="from-amber-500/20 to-amber-500/5"
           />
         </div>
 
-        {/* Conversion Funnel & Quick Actions */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        {/* Main Grid */}
+        <div className="grid lg:grid-cols-3 gap-6 mb-8">
           {/* Conversion Funnel */}
-          <div className="rounded-lg border bg-card p-6">
-            <h2 className="text-lg font-semibold mb-4">Conversion Funnel (30 days)</h2>
-            <div className="space-y-4">
+          <div className="lg:col-span-2 rounded-2xl border bg-card p-6 shadow-sm">
+            <h2 className="text-lg font-semibold mb-6">Conversion Funnel (30 days)</h2>
+            <div className="space-y-6">
               <FunnelStep
                 label="Signups"
                 value={funnel.signups}
@@ -84,105 +83,66 @@ export default async function AdminDashboardPage() {
                 color="bg-blue-500"
               />
               <FunnelStep
-                label="Activated"
+                label="Activated (video started)"
                 value={funnel.activated}
                 percentage={funnel.activationRate}
-                color="bg-yellow-500"
-                sublabel={`${funnel.activationRate}% of signups`}
+                color="bg-amber-500"
+                sublabel={`${funnel.activationRate}% activation rate`}
               />
               <FunnelStep
-                label="Converted"
+                label="Converted (subscribed)"
                 value={funnel.converted}
                 percentage={funnel.overallConversionRate}
-                color="bg-green-500"
-                sublabel={`${funnel.overallConversionRate}% of signups`}
+                color="bg-emerald-500"
+                sublabel={`${funnel.overallConversionRate}% conversion rate`}
               />
             </div>
           </div>
 
           {/* Quick Actions */}
           <div className="space-y-4">
-            <Link
+            <QuickActionCard
               href="/admin/content"
-              className="block rounded-lg border bg-card p-6 hover:border-primary/50 transition-colors group"
-            >
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="font-semibold">Course Content</h3>
-                  <p className="text-sm text-muted-foreground">
-                    {content.publishedModules} / {content.totalModules} modules • {content.publishedLessons} / {content.totalLessons} lessons
-                  </p>
-                </div>
-                <svg className="h-5 w-5 text-muted-foreground group-hover:text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </div>
-            </Link>
-
-            <Link
+              title="Course Content"
+              description={`${content.publishedModules}/${content.totalModules} modules • ${content.publishedLessons}/${content.totalLessons} lessons`}
+              icon="📚"
+            />
+            <QuickActionCard
               href="/admin/users"
-              className="block rounded-lg border bg-card p-6 hover:border-primary/50 transition-colors group"
-            >
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="font-semibold">User Management</h3>
-                  <p className="text-sm text-muted-foreground">
-                    View and manage users, subscriptions, and access
-                  </p>
-                </div>
-                <svg className="h-5 w-5 text-muted-foreground group-hover:text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </div>
-            </Link>
+              title="User Management"
+              description="View users, subscriptions & access"
+              icon="👤"
+            />
+            <QuickActionCard
+              href="/admin/content"
+              title="Upload Content"
+              description="Add new modules and lessons"
+              icon="📤"
+            />
           </div>
         </div>
 
-        {/* Activity & Email Stats */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Activity & Stats */}
+        <div className="grid md:grid-cols-2 gap-6">
           {/* Recent Activity */}
-          <div className="rounded-lg border bg-card p-6">
+          <div className="rounded-2xl border bg-card p-6 shadow-sm">
             <h2 className="text-lg font-semibold mb-4">Recent Activity (7 days)</h2>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="text-center p-4 rounded-lg bg-muted/50">
-                <div className="text-2xl font-bold">{activity.newUsers}</div>
-                <div className="text-sm text-muted-foreground">New Users</div>
-              </div>
-              <div className="text-center p-4 rounded-lg bg-muted/50">
-                <div className="text-2xl font-bold">{activity.newSubscriptions}</div>
-                <div className="text-sm text-muted-foreground">New Subs</div>
-              </div>
-              <div className="text-center p-4 rounded-lg bg-muted/50">
-                <div className="text-2xl font-bold">{activity.lessonsCompleted}</div>
-                <div className="text-sm text-muted-foreground">Lessons Done</div>
-              </div>
-              <div className="text-center p-4 rounded-lg bg-muted/50">
-                <div className="text-2xl font-bold">{activity.modulesCompleted}</div>
-                <div className="text-sm text-muted-foreground">Modules Done</div>
-              </div>
+            <div className="grid grid-cols-2 gap-3">
+              <ActivityStat label="New Users" value={activity.newUsers} icon="👤" color="text-blue-500" />
+              <ActivityStat label="New Subs" value={activity.newSubscriptions} icon="⭐" color="text-amber-500" />
+              <ActivityStat label="Lessons Done" value={activity.lessonsCompleted} icon="✅" color="text-emerald-500" />
+              <ActivityStat label="Modules Done" value={activity.modulesCompleted} icon="🏆" color="text-purple-500" />
             </div>
           </div>
 
           {/* Email Stats */}
-          <div className="rounded-lg border bg-card p-6">
+          <div className="rounded-2xl border bg-card p-6 shadow-sm">
             <h2 className="text-lg font-semibold mb-4">Email Stats (30 days)</h2>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="text-center p-4 rounded-lg bg-muted/50">
-                <div className="text-2xl font-bold text-green-600">{emailStats.sent}</div>
-                <div className="text-sm text-muted-foreground">Sent</div>
-              </div>
-              <div className="text-center p-4 rounded-lg bg-muted/50">
-                <div className="text-2xl font-bold text-yellow-600">{emailStats.pending}</div>
-                <div className="text-sm text-muted-foreground">Pending</div>
-              </div>
-              <div className="text-center p-4 rounded-lg bg-muted/50">
-                <div className="text-2xl font-bold text-red-600">{emailStats.failed}</div>
-                <div className="text-sm text-muted-foreground">Failed</div>
-              </div>
-              <div className="text-center p-4 rounded-lg bg-muted/50">
-                <div className="text-2xl font-bold text-muted-foreground">{emailStats.cancelled}</div>
-                <div className="text-sm text-muted-foreground">Cancelled</div>
-              </div>
+            <div className="grid grid-cols-2 gap-3">
+              <ActivityStat label="Sent" value={emailStats.sent} icon="✉️" color="text-emerald-500" />
+              <ActivityStat label="Pending" value={emailStats.pending} icon="⏳" color="text-amber-500" />
+              <ActivityStat label="Failed" value={emailStats.failed} icon="❌" color="text-red-500" />
+              <ActivityStat label="Cancelled" value={emailStats.cancelled} icon="🚫" color="text-muted-foreground" />
             </div>
           </div>
         </div>
@@ -191,31 +151,66 @@ export default async function AdminDashboardPage() {
   );
 }
 
-// Metric Card Component
 function MetricCard({
   title,
   value,
   subtext,
   icon,
+  gradient,
 }: {
   title: string;
   value: string;
   subtext: string;
-  icon: React.ReactNode;
+  icon: string;
+  gradient: string;
 }) {
   return (
-    <div className="rounded-lg border bg-card p-6">
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-sm font-medium text-muted-foreground">{title}</span>
-        <span className="text-muted-foreground">{icon}</span>
+    <div className="rounded-2xl border bg-card p-5 relative overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+      <div className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-50`} />
+      <div className="relative">
+        <div className="flex items-center justify-between mb-3">
+          <span className="text-2xl">{icon}</span>
+        </div>
+        <div className="text-3xl font-bold tracking-tight mb-1">{value}</div>
+        <div className="text-sm font-medium text-foreground/80">{title}</div>
+        <div className="text-xs text-muted-foreground mt-0.5">{subtext}</div>
       </div>
-      <div className="text-3xl font-bold">{value}</div>
-      <div className="text-sm text-muted-foreground mt-1">{subtext}</div>
     </div>
   );
 }
 
-// Funnel Step Component
+function QuickActionCard({
+  href,
+  title,
+  description,
+  icon,
+}: {
+  href: string;
+  title: string;
+  description: string;
+  icon: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className="group block rounded-xl border bg-card p-5 hover:bg-muted/50 hover:border-primary/50 transition-all shadow-sm hover:shadow-md"
+    >
+      <div className="flex items-center gap-4">
+        <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center text-2xl group-hover:bg-primary/20 group-hover:scale-110 transition-all">
+          {icon}
+        </div>
+        <div className="flex-1 min-w-0">
+          <h3 className="font-semibold">{title}</h3>
+          <p className="text-sm text-muted-foreground mt-0.5">{description}</p>
+        </div>
+        <svg className="w-5 h-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+        </svg>
+      </div>
+    </Link>
+  );
+}
+
 function FunnelStep({
   label,
   value,
@@ -231,19 +226,41 @@ function FunnelStep({
 }) {
   return (
     <div>
-      <div className="flex items-center justify-between mb-1">
+      <div className="flex items-center justify-between mb-2">
         <span className="text-sm font-medium">{label}</span>
-        <span className="text-sm font-bold">{value}</span>
+        <span className="text-lg font-bold">{value.toLocaleString()}</span>
       </div>
-      <div className="w-full bg-muted rounded-full h-2">
+      <div className="w-full bg-muted rounded-full h-3 overflow-hidden">
         <div
-          className={`${color} h-2 rounded-full transition-all`}
+          className={`${color} h-full rounded-full transition-all duration-500`}
           style={{ width: `${Math.min(percentage, 100)}%` }}
         />
       </div>
       {sublabel && (
-        <span className="text-xs text-muted-foreground">{sublabel}</span>
+        <span className="text-xs text-muted-foreground mt-1 block">{sublabel}</span>
       )}
+    </div>
+  );
+}
+
+function ActivityStat({
+  label,
+  value,
+  icon,
+  color,
+}: {
+  label: string;
+  value: number;
+  icon: string;
+  color: string;
+}) {
+  return (
+    <div className="p-4 rounded-xl bg-muted/50 hover:bg-muted transition-colors">
+      <div className="flex items-center gap-2 mb-2">
+        <span className="text-lg">{icon}</span>
+        <span className="text-sm text-muted-foreground font-medium">{label}</span>
+      </div>
+      <div className={`text-3xl font-bold tracking-tight ${color}`}>{value.toLocaleString()}</div>
     </div>
   );
 }

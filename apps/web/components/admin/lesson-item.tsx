@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { toggleLessonPublishedAction, toggleLessonFreeAction, deleteLessonAction } from "@/app/actions";
+import { toggleLessonFreeAction, deleteLessonAction } from "@/app/actions";
 import { useRouter } from "next/navigation";
 
 interface Lesson {
@@ -23,7 +23,6 @@ interface LessonItemProps {
 
 export function LessonItem({ lesson, moduleId, index }: LessonItemProps) {
   const router = useRouter();
-  const [isPublished, setIsPublished] = useState(lesson.published);
   const [isFree, setIsFree] = useState(lesson.isFree);
   const [isToggling, setIsToggling] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -42,21 +41,6 @@ export function LessonItem({ lesson, moduleId, index }: LessonItemProps) {
     transform: CSS.Transform.toString(transform),
     transition,
   };
-
-  async function handleTogglePublished() {
-    setIsToggling(true);
-    const previousState = isPublished;
-    setIsPublished(!isPublished);
-
-    const result = await toggleLessonPublishedAction(lesson.id);
-
-    if (result.error) {
-      setIsPublished(previousState);
-      console.error("Failed to toggle:", result.error);
-    }
-
-    setIsToggling(false);
-  }
 
   async function handleToggleFree() {
     setIsToggling(true);
@@ -90,8 +74,8 @@ export function LessonItem({ lesson, moduleId, index }: LessonItemProps) {
     <div
       ref={setNodeRef}
       style={style}
-      className={`flex items-center gap-3 rounded-md border bg-background p-3 ${
-        isDragging ? "opacity-50 shadow-md" : ""
+      className={`group flex items-center gap-3 rounded-lg border bg-background p-4 transition-all hover:border-primary/30 hover:shadow-sm ${
+        isDragging ? "opacity-50 shadow-md ring-2 ring-primary/50" : ""
       }`}
     >
       {/* Drag Handle */}
@@ -99,7 +83,7 @@ export function LessonItem({ lesson, moduleId, index }: LessonItemProps) {
         {...attributes}
         {...listeners}
         suppressHydrationWarning
-        className="cursor-grab touch-none p-1 text-muted-foreground hover:text-foreground"
+        className="cursor-grab active:cursor-grabbing touch-none p-1.5 -m-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors opacity-0 group-hover:opacity-100"
         aria-label="Drag to reorder"
       >
         <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -108,70 +92,47 @@ export function LessonItem({ lesson, moduleId, index }: LessonItemProps) {
       </button>
 
       {/* Lesson Number */}
-      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-muted text-xs font-medium">
+      <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted text-sm font-semibold">
         {index + 1}
       </span>
 
       {/* Lesson Info */}
       <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          <span className="font-medium truncate">{lesson.title}</span>
+        <div className="flex items-center gap-2 flex-wrap">
+          <Link 
+            href={`/admin/content/lessons/${lesson.id}`}
+            className="font-medium truncate hover:text-primary transition-colors"
+          >
+            {lesson.title}
+          </Link>
           {isFree && (
-            <span className="inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
+            <span className="inline-flex items-center gap-1 rounded-md bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
               Free
-            </span>
-          )}
-          {isPublished ? (
-            <span className="inline-flex items-center rounded-full bg-green-100 px-1.5 py-0.5 text-xs text-green-700 dark:bg-green-900/30 dark:text-green-400">
-              ✓
-            </span>
-          ) : (
-            <span className="inline-flex items-center rounded-full bg-yellow-100 px-1.5 py-0.5 text-xs text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400">
-              Draft
             </span>
           )}
         </div>
       </div>
 
       {/* Actions */}
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
         {/* Toggle Free */}
         <button
           onClick={handleToggleFree}
           disabled={isToggling}
-          className={`rounded-md p-1.5 text-xs ${
+          className={`rounded-lg px-2.5 py-1.5 text-xs font-medium transition-colors ${
             isFree
-              ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
-              : "text-muted-foreground hover:bg-muted"
+              ? "bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-400"
+              : "text-muted-foreground hover:bg-muted hover:text-foreground"
           } disabled:opacity-50`}
-          title={isFree ? "Remove free access" : "Make free"}
+          title={isFree ? "Make paid" : "Make free"}
         >
-          Free
-        </button>
-
-        {/* Toggle Publish */}
-        <button
-          onClick={handleTogglePublished}
-          disabled={isToggling}
-          className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground disabled:opacity-50"
-          title={isPublished ? "Unpublish" : "Publish"}
-        >
-          {isPublished ? (
-            <svg className="h-4 w-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-            </svg>
-          ) : (
-            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21" />
-            </svg>
-          )}
+          {isFree ? "Paid" : "Free"}
         </button>
 
         {/* Edit */}
         <Link
           href={`/admin/content/lessons/${lesson.id}`}
-          className="rounded-md p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+          className="rounded-lg p-2 text-muted-foreground hover:bg-primary/10 hover:text-primary transition-colors"
           title="Edit lesson"
         >
           <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -181,25 +142,25 @@ export function LessonItem({ lesson, moduleId, index }: LessonItemProps) {
 
         {/* Delete */}
         {showDeleteConfirm ? (
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1 bg-muted rounded-lg p-1">
             <button
               onClick={handleDelete}
               disabled={isDeleting}
-              className="rounded-md bg-destructive px-2 py-1 text-xs text-destructive-foreground hover:bg-destructive/90 disabled:opacity-50"
+              className="rounded-md bg-destructive px-2.5 py-1 text-xs font-medium text-destructive-foreground hover:bg-destructive/90 disabled:opacity-50"
             >
-              {isDeleting ? "..." : "Yes"}
+              {isDeleting ? "..." : "Delete"}
             </button>
             <button
               onClick={() => setShowDeleteConfirm(false)}
-              className="rounded-md px-2 py-1 text-xs text-muted-foreground hover:text-foreground"
+              className="rounded-md px-2.5 py-1 text-xs font-medium text-muted-foreground hover:text-foreground"
             >
-              No
+              Cancel
             </button>
           </div>
         ) : (
           <button
             onClick={() => setShowDeleteConfirm(true)}
-            className="rounded-md p-1.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+            className="rounded-lg p-2 text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-colors"
             title="Delete lesson"
           >
             <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

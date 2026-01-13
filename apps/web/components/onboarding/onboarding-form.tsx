@@ -4,17 +4,16 @@ import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
-// Enum values matching Prisma schema
 const USER_TYPES = [
-  { value: "SOLO_BUILDER", label: "Solo Builder", description: "Building products on my own" },
-  { value: "EXPERIENCED_DEV", label: "Experienced Developer", description: "Professional developer expanding skills" },
-  { value: "TECH_TEAM", label: "Tech Team Member", description: "Part of a development team" },
+  { value: "SOLO_BUILDER", label: "Solo Builder", description: "Building products on my own", icon: "🚀" },
+  { value: "EXPERIENCED_DEV", label: "Experienced Developer", description: "Professional developer expanding skills", icon: "💻" },
+  { value: "TECH_TEAM", label: "Tech Team Member", description: "Part of a development team", icon: "👥" },
 ] as const;
 
 const EXPERIENCE_LEVELS = [
-  { value: "BEGINNER", label: "Beginner", description: "New to AI systems" },
-  { value: "INTERMEDIATE", label: "Intermediate", description: "Some experience with AI" },
-  { value: "ADVANCED", label: "Advanced", description: "Significant AI experience" },
+  { value: "BEGINNER", label: "Beginner", description: "New to AI systems", icon: "🌱" },
+  { value: "INTERMEDIATE", label: "Intermediate", description: "Some experience with AI", icon: "📈" },
+  { value: "ADVANCED", label: "Advanced", description: "Significant AI experience", icon: "⚡" },
 ] as const;
 
 interface OnboardingFormProps {
@@ -52,7 +51,6 @@ export function OnboardingForm({
     experienceLevel: initialExperienceLevel || "",
   });
 
-  // Load progress from localStorage on mount
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
@@ -73,7 +71,6 @@ export function OnboardingForm({
     }
   }, []);
 
-  // Save progress to localStorage on change
   useEffect(() => {
     localStorage.setItem(
       STORAGE_KEY,
@@ -112,11 +109,6 @@ export function OnboardingForm({
     }
   };
 
-  const handleSkip = () => {
-    localStorage.removeItem(STORAGE_KEY);
-    router.push("/dashboard");
-  };
-
   const handleSubmit = async () => {
     if (!canProceed()) return;
 
@@ -138,13 +130,8 @@ export function OnboardingForm({
         return;
       }
 
-      // Clear localStorage on success
       localStorage.removeItem(STORAGE_KEY);
-
-      // Update session to reflect new onboardingComplete status
       await updateSession();
-
-      // Redirect to dashboard
       router.push("/dashboard");
       router.refresh();
     } catch {
@@ -154,67 +141,47 @@ export function OnboardingForm({
   };
 
   return (
-    <div className="w-full max-w-lg mx-auto">
-      {/* Progress indicator */}
-      <div className="mb-8">
-        <div className="flex justify-between mb-2">
-          {[1, 2, 3, 4].map((step) => (
-            <div
-              key={step}
-              className={`flex items-center justify-center w-10 h-10 rounded-full text-sm font-medium transition-colors ${
-                step === currentStep
-                  ? "bg-primary text-primary-foreground"
-                  : step < currentStep
-                  ? "bg-primary/20 text-primary"
-                  : "bg-muted text-muted-foreground"
-              }`}
-            >
-              {step < currentStep ? (
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-              ) : (
-                step
-              )}
-            </div>
-          ))}
-        </div>
-        <div className="h-2 bg-muted rounded-full overflow-hidden">
+    <div className="w-full">
+      {/* Progress dots */}
+      <div className="flex items-center justify-center gap-2 mb-8">
+        {[1, 2, 3, 4].map((step) => (
           <div
-            className="h-full bg-primary transition-all duration-300"
-            style={{ width: `${((currentStep - 1) / 3) * 100}%` }}
+            key={step}
+            className={`h-2 rounded-full transition-all duration-300 ${
+              step === currentStep
+                ? "w-8 bg-primary"
+                : step < currentStep
+                  ? "w-2 bg-emerald-500"
+                  : "w-2 bg-muted"
+            }`}
           />
-        </div>
+        ))}
       </div>
 
       {/* Error message */}
       {error && (
-        <div className="mb-6 rounded-md bg-destructive/10 p-4 text-sm text-destructive">
+        <div className="mb-6 rounded-xl bg-destructive/10 border border-destructive/20 p-4 text-sm text-destructive flex items-center gap-3">
+          <svg className="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
           {error}
         </div>
       )}
 
       {/* Step content */}
-      <div className="min-h-[300px]">
+      <div className="min-h-[320px]">
         {/* Step 1: Name */}
         {currentStep === 1 && (
-          <div className="space-y-6">
-            <div className="text-center mb-8">
-              <h2 className="text-2xl font-bold">What should we call you?</h2>
-              <p className="text-muted-foreground mt-2">
-                This helps us personalize your experience
-              </p>
+          <div className="space-y-6 animate-fade-in">
+            <div className="text-center mb-6">
+              <h2 className="text-xl font-bold">What should we call you?</h2>
             </div>
             <div>
-              <label htmlFor="name" className="block text-sm font-medium mb-2">
-                Your name
-              </label>
               <input
-                id="name"
                 type="text"
                 value={formData.name}
                 onChange={(e) => updateField("name", e.target.value)}
-                className="w-full rounded-md border border-input bg-background px-4 py-3 text-lg placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                className="w-full rounded-xl border border-border bg-card px-4 py-4 text-lg placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-colors"
                 placeholder="Enter your name"
                 autoFocus
               />
@@ -227,12 +194,9 @@ export function OnboardingForm({
 
         {/* Step 2: User Type */}
         {currentStep === 2 && (
-          <div className="space-y-6">
-            <div className="text-center mb-8">
-              <h2 className="text-2xl font-bold">What describes you best?</h2>
-              <p className="text-muted-foreground mt-2">
-                Help us understand your background
-              </p>
+          <div className="space-y-4 animate-fade-in">
+            <div className="text-center mb-6">
+              <h2 className="text-xl font-bold">What describes you best?</h2>
             </div>
             <div className="space-y-3">
               {USER_TYPES.map((type) => (
@@ -240,14 +204,24 @@ export function OnboardingForm({
                   key={type.value}
                   type="button"
                   onClick={() => updateField("userType", type.value)}
-                  className={`w-full text-left p-4 rounded-lg border-2 transition-colors ${
+                  className={`w-full text-left p-4 rounded-xl transition-all ${
                     formData.userType === type.value
-                      ? "border-primary bg-primary/5"
-                      : "border-input hover:border-primary/50"
+                      ? "glass border-primary/50 bg-primary/5"
+                      : "glass hover:bg-muted/50"
                   }`}
                 >
-                  <div className="font-medium">{type.label}</div>
-                  <div className="text-sm text-muted-foreground">{type.description}</div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">{type.icon}</span>
+                    <div>
+                      <div className="font-medium">{type.label}</div>
+                      <div className="text-sm text-muted-foreground">{type.description}</div>
+                    </div>
+                    {formData.userType === type.value && (
+                      <svg className="w-5 h-5 text-primary ml-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                      </svg>
+                    )}
+                  </div>
                 </button>
               ))}
             </div>
@@ -256,25 +230,18 @@ export function OnboardingForm({
 
         {/* Step 3: Build Goal */}
         {currentStep === 3 && (
-          <div className="space-y-6">
-            <div className="text-center mb-8">
-              <h2 className="text-2xl font-bold">What do you want to build?</h2>
-              <p className="text-muted-foreground mt-2">
-                Tell us about your AI project goals
-              </p>
+          <div className="space-y-6 animate-fade-in">
+            <div className="text-center mb-6">
+              <h2 className="text-xl font-bold">What do you want to build?</h2>
             </div>
             <div>
-              <label htmlFor="buildGoal" className="block text-sm font-medium mb-2">
-                Your goal
-              </label>
               <textarea
-                id="buildGoal"
                 value={formData.buildGoal}
                 onChange={(e) => updateField("buildGoal", e.target.value)}
                 rows={4}
                 maxLength={500}
-                className="w-full rounded-md border border-input bg-background px-4 py-3 placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary resize-none"
-                placeholder="e.g., I want to build an AI-powered customer support system for my SaaS..."
+                className="w-full rounded-xl border border-border bg-card px-4 py-3 placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 resize-none transition-colors"
+                placeholder="e.g., I want to build an AI-powered customer support system..."
                 autoFocus
               />
               <div className="flex justify-between mt-2 text-sm text-muted-foreground">
@@ -291,12 +258,9 @@ export function OnboardingForm({
 
         {/* Step 4: Experience Level */}
         {currentStep === 4 && (
-          <div className="space-y-6">
-            <div className="text-center mb-8">
-              <h2 className="text-2xl font-bold">What&apos;s your AI experience?</h2>
-              <p className="text-muted-foreground mt-2">
-                We&apos;ll tailor the content to your level
-              </p>
+          <div className="space-y-4 animate-fade-in">
+            <div className="text-center mb-6">
+              <h2 className="text-xl font-bold">What&apos;s your AI experience?</h2>
             </div>
             <div className="space-y-3">
               {EXPERIENCE_LEVELS.map((level) => (
@@ -304,14 +268,24 @@ export function OnboardingForm({
                   key={level.value}
                   type="button"
                   onClick={() => updateField("experienceLevel", level.value)}
-                  className={`w-full text-left p-4 rounded-lg border-2 transition-colors ${
+                  className={`w-full text-left p-4 rounded-xl transition-all ${
                     formData.experienceLevel === level.value
-                      ? "border-primary bg-primary/5"
-                      : "border-input hover:border-primary/50"
+                      ? "glass border-primary/50 bg-primary/5"
+                      : "glass hover:bg-muted/50"
                   }`}
                 >
-                  <div className="font-medium">{level.label}</div>
-                  <div className="text-sm text-muted-foreground">{level.description}</div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">{level.icon}</span>
+                    <div>
+                      <div className="font-medium">{level.label}</div>
+                      <div className="text-sm text-muted-foreground">{level.description}</div>
+                    </div>
+                    {formData.experienceLevel === level.value && (
+                      <svg className="w-5 h-5 text-primary ml-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                      </svg>
+                    )}
+                  </div>
                 </button>
               ))}
             </div>
@@ -322,21 +296,16 @@ export function OnboardingForm({
       {/* Navigation buttons */}
       <div className="mt-8 flex items-center justify-between">
         <div>
-          {currentStep > 1 ? (
+          {currentStep > 1 && (
             <button
               type="button"
               onClick={handleBack}
-              className="text-sm text-muted-foreground hover:text-foreground"
+              className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
             >
-              ← Back
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={handleSkip}
-              className="text-sm text-muted-foreground hover:text-foreground"
-            >
-              Skip for now
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+              Back
             </button>
           )}
         </div>
@@ -347,18 +316,36 @@ export function OnboardingForm({
               type="button"
               onClick={handleNext}
               disabled={!canProceed()}
-              className="rounded-md bg-primary px-6 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-primary text-primary-foreground font-medium hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 btn-glow transition-all"
             >
               Continue
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
             </button>
           ) : (
             <button
               type="button"
               onClick={handleSubmit}
               disabled={!canProceed() || isSubmitting}
-              className="rounded-md bg-primary px-6 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
+              className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-primary to-emerald-500 text-primary-foreground font-medium hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 btn-glow transition-all"
             >
-              {isSubmitting ? "Completing..." : "Complete Setup"}
+              {isSubmitting ? (
+                <>
+                  <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                  </svg>
+                  Completing...
+                </>
+              ) : (
+                <>
+                  Start Learning
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                </>
+              )}
             </button>
           )}
         </div>

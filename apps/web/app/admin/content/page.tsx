@@ -7,20 +7,62 @@ export default async function AdminContentPage() {
   const modules = await getAllModulesWithLessons();
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Course Content</h1>
-          <p className="text-muted-foreground">
-            Manage modules and lessons for your course
-          </p>
+    <div className="p-6 lg:p-8">
+      <div className="max-w-5xl mx-auto space-y-8">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Course Content</h1>
+            <p className="text-muted-foreground mt-1">
+              Manage modules and lessons for your course
+            </p>
+          </div>
+          <CreateModuleButton />
         </div>
-        <CreateModuleButton />
-      </div>
 
-      <Suspense fallback={<ModuleListSkeleton />}>
-        <ModuleList initialModules={modules} />
-      </Suspense>
+        {/* Stats Bar */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <StatCard 
+            label="Total Modules" 
+            value={modules.length} 
+            icon="📚" 
+          />
+          <StatCard 
+            label="Published" 
+            value={modules.filter(m => m.published).length} 
+            icon="✅" 
+          />
+          <StatCard 
+            label="Total Lessons" 
+            value={modules.reduce((acc, m) => acc + m.lessons.length, 0)} 
+            icon="🎬" 
+          />
+          <StatCard 
+            label="Draft" 
+            value={modules.filter(m => !m.published).length} 
+            icon="📝" 
+          />
+        </div>
+
+        {/* Module List */}
+        <Suspense fallback={<ModuleListSkeleton />}>
+          <ModuleList initialModules={modules} />
+        </Suspense>
+      </div>
+    </div>
+  );
+}
+
+function StatCard({ label, value, icon }: { label: string; value: number; icon: string }) {
+  return (
+    <div className="rounded-xl border bg-card p-4">
+      <div className="flex items-center gap-3">
+        <span className="text-2xl">{icon}</span>
+        <div>
+          <p className="text-2xl font-bold">{value}</p>
+          <p className="text-xs text-muted-foreground">{label}</p>
+        </div>
+      </div>
     </div>
   );
 }

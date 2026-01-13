@@ -127,6 +127,23 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         }
       }
 
+      // Always refresh critical user data from database on each request
+      // This ensures role and onboarding status changes are reflected immediately
+      if (token.id && !user && trigger !== "update") {
+        const dbUser = await prisma.user.findUnique({
+          where: { id: token.id },
+          select: {
+            role: true,
+            onboardingComplete: true,
+          },
+        });
+
+        if (dbUser) {
+          token.role = dbUser.role;
+          token.onboardingComplete = dbUser.onboardingComplete;
+        }
+      }
+
       return token;
     },
     async session({ session, token }) {
