@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
+import { UserType, ExperienceLevel } from "@prisma/client";
 
 import { auth } from "@/lib/auth";
-import { prisma, UserType, ExperienceLevel } from "@/lib/prisma";
+import { prisma } from "@/lib/prisma";
 
 export async function POST(request: Request) {
   try {
