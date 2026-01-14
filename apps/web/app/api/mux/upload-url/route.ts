@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { video, isMuxConfigured, getMuxConfigStatus } from "@/lib/mux";
+import { prisma } from "@/lib/prisma";
 
 // GET endpoint to check Mux configuration status
 export async function GET() {
@@ -51,6 +52,33 @@ export async function POST(request: NextRequest) {
         { error: "lessonId is required" },
         { status: 400 }
       );
+    }
+
+    // Get the current lesson to check for existing video
+    const lesson = await prisma.lesson.findUnique({
+      where: { id: lessonId },
+      select: { muxAssetId: true },
+    });
+
+    // If there's an existing Mux asset, delete it to save storage costs
+    if (lesson?.muxAssetId) {
+      try {
+        await video.assets.delete(lesson.muxAssetId);
+        console.log(`Deleted old Mux asset: ${lesson.muxAssetId}`);
+      } catch (error) {
+        console.error(`Failed to delete old Mux asset ${lesson.muxAssetId}:`, error);
+        // Continue anyway - new video should still work
+      }
+      
+      // Clear the old video data immediately
+      await prisma.lesson.update({
+        where: { id: lessonId },
+        data: {
+          muxAssetId: null,
+          muxPlaybackId: null,
+          videoDuration: null,
+        },
+      });
     }
 
     // Create a direct upload URL from Mux
