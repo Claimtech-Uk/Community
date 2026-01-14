@@ -85,7 +85,21 @@ export async function POST(request: NextRequest) {
     const key = generateAssetKey(lessonId, file.name);
 
     // Upload to S3
-    const url = await uploadToS3(key, buffer, file.type);
+    let url: string;
+    try {
+      url = await uploadToS3(key, buffer, file.type);
+    } catch (s3Error) {
+      console.error("S3 upload failed:", s3Error);
+      const errorMessage = s3Error instanceof Error ? s3Error.message : "Unknown S3 error";
+      return NextResponse.json(
+        { 
+          error: "S3 upload failed",
+          details: errorMessage,
+          hint: "Check AWS credentials and bucket permissions in Vercel environment variables"
+        },
+        { status: 500 }
+      );
+    }
 
     // Create asset record
     const asset = await prisma.asset.create({
@@ -101,8 +115,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ asset });
   } catch (error) {
     console.error("Upload error:", error);
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
-      { error: "Failed to upload file. Please check S3 configuration." },
+      { 
+        error: "Failed to upload file",
+        details: errorMessage
+      },
       { status: 500 }
     );
   }

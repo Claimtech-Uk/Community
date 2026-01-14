@@ -42,19 +42,24 @@ export async function uploadToS3(
   body: Buffer | Uint8Array,
   contentType: string
 ): Promise<string> {
-  const command = new PutObjectCommand({
-    Bucket: S3_BUCKET,
-    Key: key,
-    Body: body,
-    ContentType: contentType,
-    // Make the object publicly readable
-    ACL: "public-read",
-  });
+  try {
+    const command = new PutObjectCommand({
+      Bucket: S3_BUCKET,
+      Key: key,
+      Body: body,
+      ContentType: contentType,
+      // Don't use ACL - modern S3 buckets have ACLs disabled by default
+      // Instead, bucket policy should allow public read access
+    });
 
-  await s3Client.send(command);
+    await s3Client.send(command);
 
-  // Return the public URL
-  return `https://${S3_BUCKET}.s3.${S3_REGION}.amazonaws.com/${key}`;
+    // Return the public URL
+    return `https://${S3_BUCKET}.s3.${S3_REGION}.amazonaws.com/${key}`;
+  } catch (error) {
+    console.error("[S3] Upload error:", error);
+    throw new Error(`S3 upload failed: ${error instanceof Error ? error.message : "Unknown error"}`);
+  }
 }
 
 /**
