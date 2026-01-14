@@ -3,6 +3,33 @@ import { getAllModulesWithLessons } from "@/lib/data";
 import { ModuleList } from "@/components/admin/module-list";
 import { CreateModuleButton } from "@/components/admin/create-module-button";
 
+function StatCard({ label, value, icon }: { label: string; value: number; icon: string }) {
+  return (
+    <div className="rounded-xl border bg-card p-4">
+      <div className="flex items-center gap-3">
+        <span className="text-2xl">{icon}</span>
+        <div>
+          <p className="text-2xl font-bold">{value}</p>
+          <p className="text-xs text-muted-foreground">{label}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ModuleListSkeleton() {
+  return (
+    <div className="space-y-4">
+      {[1, 2, 3].map((i) => (
+        <div
+          key={i}
+          className="h-24 rounded-lg border bg-muted/50 animate-pulse"
+        />
+      ))}
+    </div>
+  );
+}
+
 export default async function AdminContentPage() {
   const modules = await getAllModulesWithLessons();
 
@@ -49,33 +76,6 @@ export default async function AdminContentPage() {
           <ModuleList initialModules={modules} />
         </Suspense>
       </div>
-    </div>
-  );
-}
-
-function StatCard({ label, value, icon }: { label: string; value: number; icon: string }) {
-  return (
-    <div className="rounded-xl border bg-card p-4">
-      <div className="flex items-center gap-3">
-        <span className="text-2xl">{icon}</span>
-        <div>
-          <p className="text-2xl font-bold">{value}</p>
-          <p className="text-xs text-muted-foreground">{label}</p>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function ModuleListSkeleton() {
-  return (
-    <div className="space-y-4">
-      {[1, 2, 3].map((i) => (
-        <div
-          key={i}
-          className="h-24 rounded-lg border bg-muted/50 animate-pulse"
-        />
-      ))}
     </div>
   );
 }
