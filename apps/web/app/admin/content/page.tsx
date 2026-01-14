@@ -56,17 +56,17 @@ export default async function AdminContentPage() {
           />
           <StatCard 
             label="Published" 
-            value={modules.filter(m => m.published).length} 
+            value={modules.filter((m: any) => m.published).length} 
             icon="✅" 
           />
           <StatCard 
             label="Total Lessons" 
-            value={modules.reduce((acc, m) => acc + m.lessons.length, 0)} 
+            value={modules.reduce((acc: number, m: any) => acc + m.lessons.length, 0)} 
             icon="🎬" 
           />
           <StatCard 
             label="Draft" 
-            value={modules.filter(m => !m.published).length} 
+            value={modules.filter((m: any) => !m.published).length} 
             icon="📝" 
           />
         </div>
