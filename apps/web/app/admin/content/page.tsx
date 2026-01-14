@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import Link from "next/link";
 import { getAllModulesWithLessons } from "@/lib/data";
 import { ModuleList } from "@/components/admin/module-list";
 import { CreateModuleButton } from "@/components/admin/create-module-button";
@@ -44,7 +45,15 @@ export default async function AdminContentPage() {
               Manage modules and lessons for your course
             </p>
           </div>
-          <CreateModuleButton />
+          <div className="flex gap-2">
+            <Link
+              href="/admin/mux-cleanup"
+              className="px-4 py-2 rounded-lg border hover:bg-muted text-sm"
+            >
+              🎬 Manage Videos
+            </Link>
+            <CreateModuleButton />
+          </div>
         </div>
 
         {/* Stats Bar */}

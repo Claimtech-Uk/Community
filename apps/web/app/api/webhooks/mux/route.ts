@@ -42,7 +42,8 @@ export async function POST(request: NextRequest) {
     const body = await request.text();
     const signature = request.headers.get("mux-signature");
 
-    console.log("[Mux Webhook] Received request");
+    console.log("[Mux Webhook] ========== NEW REQUEST ==========");
+    console.log("[Mux Webhook] Timestamp:", new Date().toISOString());
     console.log("[Mux Webhook] Has signature:", !!signature);
 
     // Verify webhook signature if secret is configured
@@ -50,17 +51,19 @@ export async function POST(request: NextRequest) {
 
     if (webhookSecret && signature) {
       const isValid = verifyMuxSignature(body, signature, webhookSecret);
-      console.log("[Mux Webhook] Signature valid:", isValid);
+      console.log("[Mux Webhook] Signature verification:", isValid ? "✅ VALID" : "❌ INVALID");
       
       if (!isValid) {
-        console.error("[Mux Webhook] Signature verification failed");
+        console.error("[Mux Webhook] ❌ Signature verification failed - rejecting webhook");
         return NextResponse.json(
           { error: "Invalid signature" },
           { status: 401 }
         );
       }
     } else if (webhookSecret && !signature) {
-      console.error("[Mux Webhook] Secret configured but no signature provided");
+      console.warn("[Mux Webhook] ⚠️ Secret configured but no signature in request - allowing anyway");
+    } else {
+      console.log("[Mux Webhook] No webhook secret configured - processing without verification");
     }
 
     const event = JSON.parse(body);

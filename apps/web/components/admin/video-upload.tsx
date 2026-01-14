@@ -110,7 +110,13 @@ export function VideoUpload({
           setMuxStatus({ configured: false, signingConfigured: false, missing: data.missing || [] });
           throw new Error(data.message || "Mux not configured");
         }
-        throw new Error(data.error || "Failed to get upload URL");
+        
+        // Check for plan limit error
+        if (data.details && data.details.includes("limited to 10 assets")) {
+          throw new Error("Mux free plan limit reached (10 videos). Delete old videos at /admin/mux-cleanup or upgrade your Mux plan.");
+        }
+        
+        throw new Error(data.details || data.error || "Failed to get upload URL");
       }
 
       setUploadUrl(data.uploadUrl);
