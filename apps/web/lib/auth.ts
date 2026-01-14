@@ -38,6 +38,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     signIn: "/auth/signin",
     error: "/auth/error",
   },
+  trustHost: true,
   debug: process.env.NODE_ENV === "development",
   providers: [
     // Google OAuth Provider
@@ -101,65 +102,81 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   ],
   callbacks: {
     async jwt({ token, user, trigger, session }) {
-      // Initial sign in - add user data to token
-      if (user) {
-        const dbUser = await prisma.user.findUnique({
-          where: { id: user.id },
-          select: {
-            id: true,
-            role: true,
-            onboardingComplete: true,
-          },
-        });
+      try {
+        // Initial sign in - add user data to token
+        if (user) {
+          const dbUser = await prisma.user.findUnique({
+            where: { id: user.id },
+            select: {
+              id: true,
+              role: true,
+              onboardingComplete: true,
+            },
+          });
 
-        if (dbUser) {
-          token.id = dbUser.id;
-          token.role = dbUser.role;
-          token.onboardingComplete = dbUser.onboardingComplete;
+          if (dbUser) {
+            token.id = dbUser.id;
+            token.role = dbUser.role;
+            token.onboardingComplete = dbUser.onboardingComplete;
+          } else {
+            // Fallback if user not found (shouldn't happen with Prisma adapter)
+            token.id = user.id || "";
+            token.role = "USER";
+            token.onboardingComplete = false;
+          }
         }
-      }
 
-      // Handle session updates (e.g., after onboarding)
-      if (trigger === "update" && session) {
-        const dbUser = await prisma.user.findUnique({
-          where: { id: token.id },
-          select: {
-            role: true,
-            onboardingComplete: true,
-          },
-        });
+        // Handle session updates (e.g., after onboarding)
+        if (trigger === "update" && session) {
+          const dbUser = await prisma.user.findUnique({
+            where: { id: token.id },
+            select: {
+              role: true,
+              onboardingComplete: true,
+            },
+          });
 
-        if (dbUser) {
-          token.role = dbUser.role;
-          token.onboardingComplete = dbUser.onboardingComplete;
+          if (dbUser) {
+            token.role = dbUser.role;
+            token.onboardingComplete = dbUser.onboardingComplete;
+          }
         }
-      }
 
-      // Always refresh critical user data from database on each request
-      // This ensures role and onboarding status changes are reflected immediately
-      if (token.id && !user && trigger !== "update") {
-        const dbUser = await prisma.user.findUnique({
-          where: { id: token.id },
-          select: {
-            role: true,
-            onboardingComplete: true,
-          },
-        });
+        // Always refresh critical user data from database on each request
+        // This ensures role and onboarding status changes are reflected immediately
+        if (token.id && !user && trigger !== "update") {
+          const dbUser = await prisma.user.findUnique({
+            where: { id: token.id },
+            select: {
+              role: true,
+              onboardingComplete: true,
+            },
+          });
 
-        if (dbUser) {
-          token.role = dbUser.role;
-          token.onboardingComplete = dbUser.onboardingComplete;
+          if (dbUser) {
+            token.role = dbUser.role;
+            token.onboardingComplete = dbUser.onboardingComplete;
+          }
         }
-      }
 
-      return token;
+        return token;
+      } catch (error) {
+        console.error("[Auth] JWT callback error:", error);
+        // Return token with minimal data to prevent session breakage
+        if (!token.id && user) {
+          token.id = user.id || "";
+          token.role = "USER";
+          token.onboardingComplete = false;
+        }
+        return token;
+      }
     },
     async session({ session, token }) {
       // Transfer token data to session
-      if (token) {
+      if (token && token.id) {
         session.user.id = token.id;
-        session.user.role = token.role;
-        session.user.onboardingComplete = token.onboardingComplete;
+        session.user.role = token.role || "USER";
+        session.user.onboardingComplete = token.onboardingComplete ?? false;
       }
 
       return session;
