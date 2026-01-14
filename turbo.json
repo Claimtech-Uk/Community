@@ -4,7 +4,30 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": [".next/**", "!.next/cache/**", "dist/**"]
+      "outputs": [".next/**", "!.next/cache/**", "dist/**"],
+      "env": [
+        "AUTH_SECRET",
+        "DATABASE_URL",
+        "DIRECT_URL",
+        "GOOGLE_CLIENT_ID",
+        "GOOGLE_CLIENT_SECRET",
+        "MAILGUN_API_KEY",
+        "MAILGUN_DOMAIN",
+        "STRIPE_SECRET_KEY",
+        "STRIPE_PUBLISHABLE_KEY",
+        "STRIPE_MONTHLY_PRICE_ID",
+        "STRIPE_ANNUAL_PRICE_ID",
+        "MUX_TOKEN_ID",
+        "MUX_TOKEN_SECRET",
+        "MUX_SIGNING_KEY_ID",
+        "MUX_SIGNING_PRIVATE_KEY",
+        "MUX_WEBHOOK_SECRET",
+        "AWS_ACCESS_KEY_ID",
+        "AWS_SECRET_ACCESS_KEY",
+        "AWS_REGION",
+        "AWS_S3_BUCKET",
+        "NEXT_PUBLIC_APP_URL"
+      ]
     },
     "dev": {
       "cache": false,
