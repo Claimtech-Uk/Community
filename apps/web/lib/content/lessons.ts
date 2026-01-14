@@ -7,13 +7,13 @@ import { prisma, Prisma } from "@/lib/prisma";
 export interface CreateLessonInput {
   moduleId: string;
   title: string;
-  content?: Prisma.InputJsonValue;
+  content?: any;
   isFree?: boolean;
 }
 
 export interface UpdateLessonInput {
   title?: string;
-  content?: Prisma.InputJsonValue;
+  content?: any;
   published?: boolean;
   isFree?: boolean;
 }
@@ -99,7 +99,7 @@ export async function updateLesson(id: string, data: UpdateLessonInput) {
 /**
  * Update lesson content (TipTap JSON)
  */
-export async function updateLessonContent(id: string, content: Prisma.InputJsonValue) {
+export async function updateLessonContent(id: string, content: any) {
   return prisma.lesson.update({
     where: { id },
     data: { content },

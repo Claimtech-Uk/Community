@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { Prisma } from "@prisma/client";
+import type { Prisma } from "@prisma/client";
 import { auth } from "@/lib/auth";
 import {
   createLesson as createLessonData,
@@ -20,7 +20,7 @@ import {
 export async function createLessonAction(data: {
   moduleId: string;
   title: string;
-  content?: Prisma.InputJsonValue;
+  content?: any;
   isFree?: boolean;
 }) {
   const session = await auth();
@@ -62,7 +62,7 @@ export async function updateLessonAction(
   id: string,
   data: {
     title?: string;
-    content?: Prisma.InputJsonValue;
+    content?: any;
     published?: boolean;
     isFree?: boolean;
     muxAssetId?: string | null;

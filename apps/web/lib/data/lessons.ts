@@ -11,7 +11,7 @@ import { Prisma } from "@prisma/client";
 export async function createLesson(data: {
   moduleId: string;
   title: string;
-  content?: Prisma.InputJsonValue;
+  content?: any;
   published?: boolean;
   isFree?: boolean;
 }) {
@@ -165,7 +165,7 @@ export async function updateLesson(
   id: string,
   data: {
     title?: string;
-    content?: Prisma.InputJsonValue | typeof Prisma.JsonNull;
+    content?: any;
     published?: boolean;
     isFree?: boolean;
     muxAssetId?: string | null;
