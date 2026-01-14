@@ -70,15 +70,16 @@ export function VideoUpload({
   useEffect(() => {
     if (!isProcessing && uploadStatus !== "processing") return;
 
+    // Stop polling after 5 minutes (60 polls)
+    if (pollingCount >= 60) {
+      console.log("Stopped polling after 5 minutes");
+      return;
+    }
+
     const pollInterval = setInterval(() => {
       setPollingCount((c) => c + 1);
       onUploadComplete?.(); // This triggers a page refresh to get updated data
     }, 5000); // Poll every 5 seconds
-
-    // Stop polling after 5 minutes (60 polls)
-    if (pollingCount >= 60) {
-      clearInterval(pollInterval);
-    }
 
     return () => clearInterval(pollInterval);
   }, [isProcessing, uploadStatus, pollingCount, onUploadComplete]);

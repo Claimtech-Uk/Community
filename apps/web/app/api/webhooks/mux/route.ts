@@ -42,31 +42,43 @@ export async function POST(request: NextRequest) {
     const body = await request.text();
     const signature = request.headers.get("mux-signature");
 
+    console.log("[Mux Webhook] Received request");
+    console.log("[Mux Webhook] Has signature:", !!signature);
+
     // Verify webhook signature if secret is configured
     const webhookSecret = process.env.MUX_WEBHOOK_SECRET;
 
     if (webhookSecret && signature) {
-      if (!verifyMuxSignature(body, signature, webhookSecret)) {
-        console.error("Webhook signature verification failed");
+      const isValid = verifyMuxSignature(body, signature, webhookSecret);
+      console.log("[Mux Webhook] Signature valid:", isValid);
+      
+      if (!isValid) {
+        console.error("[Mux Webhook] Signature verification failed");
         return NextResponse.json(
           { error: "Invalid signature" },
           { status: 401 }
         );
       }
+    } else if (webhookSecret && !signature) {
+      console.error("[Mux Webhook] Secret configured but no signature provided");
     }
 
     const event = JSON.parse(body);
     const { type, data } = event;
 
-    console.log(`Mux webhook received: ${type}`);
+    console.log(`[Mux Webhook] Event type: ${type}`);
+    console.log(`[Mux Webhook] Event data:`, JSON.stringify(data, null, 2));
 
     switch (type) {
       case "video.asset.ready": {
         // Video has finished processing and is ready for playback
         const { id: assetId, playback_ids, duration, passthrough } = data;
 
+        console.log(`[Mux Webhook] video.asset.ready - asset_id: ${assetId}, duration: ${duration}`);
+        console.log(`[Mux Webhook] playback_ids:`, JSON.stringify(playback_ids));
+
         if (!passthrough) {
-          console.log("No passthrough data, skipping...");
+          console.log("[Mux Webhook] No passthrough data, skipping...");
           return NextResponse.json({ received: true });
         }
 
@@ -74,13 +86,14 @@ export async function POST(request: NextRequest) {
         try {
           const metadata = JSON.parse(passthrough);
           lessonId = metadata.lessonId;
-        } catch {
-          console.error("Failed to parse passthrough:", passthrough);
+          console.log(`[Mux Webhook] Parsed lessonId: ${lessonId}`);
+        } catch (error) {
+          console.error("[Mux Webhook] Failed to parse passthrough:", passthrough, error);
           return NextResponse.json({ received: true });
         }
 
         if (!lessonId) {
-          console.log("No lessonId in passthrough, skipping...");
+          console.log("[Mux Webhook] No lessonId in passthrough, skipping...");
           return NextResponse.json({ received: true });
         }
 
@@ -89,13 +102,16 @@ export async function POST(request: NextRequest) {
           (p: { policy: string }) => p.policy === "signed"
         )?.id;
 
+        console.log(`[Mux Webhook] Found signed playback ID: ${signedPlaybackId}`);
+
         if (!signedPlaybackId) {
-          console.error("No signed playback ID found for asset:", assetId);
+          console.error("[Mux Webhook] ❌ No signed playback ID found for asset:", assetId);
+          console.error("[Mux Webhook] Available playback_ids:", playback_ids);
           return NextResponse.json({ received: true });
         }
 
         // Update the lesson with video information
-        await prisma.lesson.update({
+        const updatedLesson = await prisma.lesson.update({
           where: { id: lessonId },
           data: {
             muxAssetId: assetId,
@@ -104,7 +120,8 @@ export async function POST(request: NextRequest) {
           },
         });
 
-        console.log(`Updated lesson ${lessonId} with video: ${assetId}`);
+        console.log(`[Mux Webhook] ✅ Updated lesson ${lessonId} with video: ${assetId}`);
+        console.log(`[Mux Webhook] ✅ Playback ID: ${signedPlaybackId}, Duration: ${Math.round(duration || 0)}s`);
         break;
       }
 
@@ -142,7 +159,11 @@ export async function POST(request: NextRequest) {
         // We store the asset ID so we can track processing status
         const { asset_id, passthrough } = data;
 
+        console.log(`[Mux Webhook] video.upload.asset_created - asset_id: ${asset_id}`);
+        console.log(`[Mux Webhook] passthrough:`, passthrough);
+
         if (!passthrough) {
+          console.log("[Mux Webhook] No passthrough data, skipping");
           return NextResponse.json({ received: true });
         }
 
@@ -150,7 +171,9 @@ export async function POST(request: NextRequest) {
         try {
           const metadata = JSON.parse(passthrough);
           lessonId = metadata.lessonId;
-        } catch {
+          console.log(`[Mux Webhook] Parsed lessonId: ${lessonId}`);
+        } catch (error) {
+          console.error("[Mux Webhook] Failed to parse passthrough:", error);
           return NextResponse.json({ received: true });
         }
 
@@ -164,7 +187,7 @@ export async function POST(request: NextRequest) {
               muxPlaybackId: null,
             },
           });
-          console.log(`Lesson ${lessonId} video upload started, asset: ${asset_id}`);
+          console.log(`[Mux Webhook] ✅ Updated lesson ${lessonId} with asset ${asset_id} (processing)`);
         }
         break;
       }
