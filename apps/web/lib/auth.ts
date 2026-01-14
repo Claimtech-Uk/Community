@@ -38,12 +38,20 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     signIn: "/auth/signin",
     error: "/auth/error",
   },
+  debug: process.env.NODE_ENV === "development",
   providers: [
     // Google OAuth Provider
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
       allowDangerousEmailAccountLinking: true, // Link accounts with same email
+      authorization: {
+        params: {
+          prompt: "consent",
+          access_type: "offline",
+          response_type: "code"
+        }
+      }
     }),
     // Email/Password Credentials Provider
     Credentials({
@@ -157,14 +165,20 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       return session;
     },
     async signIn({ user, account }) {
-      // For OAuth sign-ins, update last login
-      if (account?.provider !== "credentials" && user.id) {
-        await prisma.user.update({
-          where: { id: user.id },
-          data: { lastLoginAt: new Date() },
-        });
+      try {
+        // For OAuth sign-ins, update last login
+        if (account?.provider !== "credentials" && user.id) {
+          await prisma.user.update({
+            where: { id: user.id },
+            data: { lastLoginAt: new Date() },
+          });
+        }
+        return true;
+      } catch (error) {
+        console.error("[Auth] Sign in error:", error);
+        // Still allow sign-in even if lastLogin update fails
+        return true;
       }
-      return true;
     },
   },
 });

@@ -5,15 +5,15 @@ import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 
 const errorMessages: Record<string, string> = {
-  Configuration: "There is a problem with the server configuration.",
-  AccessDenied: "Google OAuth is in testing mode. Your email needs to be added as a test user in Google Cloud Console, or the app needs to be published.",
+  Configuration: "There is a problem with the server configuration. Please check that all environment variables are set.",
+  AccessDenied: "Access was denied. This could be due to: (1) Missing environment variables (GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, DATABASE_URL), (2) Google OAuth is in testing mode and your email is not added as a test user, or (3) Database connection failed.",
   Verification: "The verification link has expired or has already been used.",
   Default: "An error occurred during authentication.",
-  OAuthSignin: "Error starting the OAuth sign in flow.",
-  OAuthCallback: "Error handling the OAuth callback.",
-  OAuthCreateAccount: "Error creating an OAuth account.",
+  OAuthSignin: "Error starting the OAuth sign in flow. Check that GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET are set.",
+  OAuthCallback: "Error handling the OAuth callback. Verify the redirect URI in Google Cloud Console matches: https://community-web-iota.vercel.app/api/auth/callback/google",
+  OAuthCreateAccount: "Error creating an OAuth account. Database may not be accessible or DATABASE_URL not set.",
   EmailCreateAccount: "Error creating an email account.",
-  Callback: "Error in the OAuth callback handler.",
+  Callback: "Error in the OAuth callback handler. Check DATABASE_URL and AUTH_SECRET environment variables.",
   OAuthAccountNotLinked:
     "This email is already associated with another account. Please sign in with your original provider.",
   EmailSignin: "Error sending the sign in email.",
