@@ -6,6 +6,9 @@ import { PricingCards } from "@/components/pricing";
 import { trackEvent, EVENTS } from "@/lib/tracking";
 import { checkUserAccess } from "@/lib/access";
 
+// Force dynamic rendering to enable auth() at runtime
+export const dynamic = 'force-dynamic';
+
 // FAQs
 const faqs = [
   {

@@ -5,6 +5,9 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { OnboardingForm } from "@/components/onboarding/onboarding-form";
 
+// Force dynamic rendering to enable auth() at runtime
+export const dynamic = 'force-dynamic';
+
 export default async function OnboardingPage() {
   const session = await auth();
 

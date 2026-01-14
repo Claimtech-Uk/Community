@@ -12,6 +12,9 @@ import { prisma } from "@/lib/prisma";
 import { LessonList, LockedModulePage } from "@/components/course";
 import { ModuleProgressBar } from "@/components/progress";
 
+// Force dynamic rendering to enable auth() at runtime
+export const dynamic = 'force-dynamic';
+
 interface ModulePageProps {
   params: Promise<{ moduleId: string }>;
 }

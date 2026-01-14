@@ -20,6 +20,9 @@ import { SoftLockBanner } from "@/components/billing";
 import { MarkCompleteButton } from "@/components/progress";
 import type { JSONContent } from "@tiptap/react";
 
+// Force dynamic rendering to enable auth() at runtime
+export const dynamic = 'force-dynamic';
+
 interface LessonPageProps {
   params: Promise<{ moduleId: string; lessonId: string }>;
 }

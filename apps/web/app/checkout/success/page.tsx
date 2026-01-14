@@ -3,6 +3,9 @@ import Link from "next/link";
 import { auth } from "@/lib/auth";
 import { stripe } from "@/lib/stripe";
 
+// Force dynamic rendering to enable auth() at runtime
+export const dynamic = 'force-dynamic';
+
 interface SuccessPageProps {
   searchParams: Promise<{ session_id?: string }>;
 }

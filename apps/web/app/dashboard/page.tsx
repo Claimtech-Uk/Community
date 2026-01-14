@@ -12,6 +12,9 @@ import {
 } from "@/lib/data";
 import { checkUserAccess } from "@/lib/access";
 
+// Force dynamic rendering to enable auth() at runtime
+export const dynamic = 'force-dynamic';
+
 export default async function DashboardPage() {
   const session = await auth();
 

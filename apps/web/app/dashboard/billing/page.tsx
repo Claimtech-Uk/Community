@@ -5,6 +5,9 @@ import { checkUserAccess } from "@/lib/access";
 import { formatPrice, PRICE_AMOUNTS } from "@/lib/stripe";
 import { ManageSubscriptionButton } from "./manage-subscription-button";
 
+// Force dynamic rendering to enable auth() at runtime
+export const dynamic = 'force-dynamic';
+
 export default async function BillingPage() {
   const session = await auth();
 

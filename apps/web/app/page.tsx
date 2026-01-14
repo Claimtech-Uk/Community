@@ -2,6 +2,9 @@ import Link from "next/link";
 import Image from "next/image";
 import { auth } from "@/lib/auth";
 
+// Force dynamic rendering to enable auth() at runtime
+export const dynamic = 'force-dynamic';
+
 // Feature data
 const features = [
   {
