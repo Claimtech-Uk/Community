@@ -22,14 +22,42 @@ export default async function DashboardPage() {
     redirect("/auth/signin");
   }
 
+  // Check if user needs onboarding first
+  if (!session.user.onboardingComplete) {
+    redirect("/onboarding");
+  }
+
   const isAdmin = session.user.role === "ADMIN";
   
-  const [courseProgress, nextLesson, modulesWithProgress, accessInfo] = await Promise.all([
-    getCourseProgress(session.user.id),
-    getNextIncompleteLesson(session.user.id),
-    getModulesWithProgress(session.user.id),
-    checkUserAccess(session.user.id),
-  ]);
+  let courseProgress, nextLesson, modulesWithProgress, accessInfo;
+  
+  try {
+    [courseProgress, nextLesson, modulesWithProgress, accessInfo] = await Promise.all([
+      getCourseProgress(session.user.id),
+      getNextIncompleteLesson(session.user.id),
+      getModulesWithProgress(session.user.id),
+      checkUserAccess(session.user.id),
+    ]);
+  } catch (error) {
+    console.error("[Dashboard] Error fetching data:", error);
+    // If data fetching fails, show an error page
+    return (
+      <div className="min-h-screen flex items-center justify-center p-8">
+        <div className="text-center max-w-md">
+          <h1 className="text-2xl font-bold mb-4">Unable to Load Dashboard</h1>
+          <p className="text-muted-foreground mb-6">
+            There was an error loading your dashboard. This might be a temporary issue.
+          </p>
+          <Link
+            href="/auth/signin"
+            className="inline-block px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:opacity-90"
+          >
+            Try Again
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">

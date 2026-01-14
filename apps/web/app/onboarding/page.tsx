@@ -19,15 +19,36 @@ export default async function OnboardingPage() {
     redirect("/dashboard");
   }
 
-  const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    select: {
-      name: true,
-      userType: true,
-      buildGoal: true,
-      experienceLevel: true,
-    },
-  });
+  let user;
+  try {
+    user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: {
+        name: true,
+        userType: true,
+        buildGoal: true,
+        experienceLevel: true,
+      },
+    });
+  } catch (error) {
+    console.error("[Onboarding] Error fetching user:", error);
+    return (
+      <div className="min-h-screen flex items-center justify-center p-8">
+        <div className="text-center max-w-md">
+          <h1 className="text-2xl font-bold mb-4">Database Error</h1>
+          <p className="text-muted-foreground mb-6">
+            Unable to load your profile. Please try again.
+          </p>
+          <Link
+            href="/auth/signin"
+            className="inline-block px-6 py-3 bg-primary text-primary-foreground rounded-lg hover:opacity-90"
+          >
+            Back to Sign In
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
