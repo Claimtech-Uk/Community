@@ -90,8 +90,21 @@ export function generateSignedPlaybackUrl(playbackId: string): string {
     return `https://stream.mux.com/${playbackId}.m3u8`;
   }
 
-  // Decode base64 private key
-  const privateKey = Buffer.from(signingPrivateKey, "base64").toString("utf8");
+  // Private key might be base64 encoded or raw PEM format
+  let privateKey: string;
+  try {
+    // Check if it's already in PEM format (starts with -----)
+    if (signingPrivateKey.includes("-----BEGIN")) {
+      privateKey = signingPrivateKey;
+    } else {
+      // Try to decode from base64
+      privateKey = Buffer.from(signingPrivateKey, "base64").toString("utf8");
+    }
+  } catch (error) {
+    console.error("Error processing private key:", error);
+    // Use as-is if processing fails
+    privateKey = signingPrivateKey;
+  }
 
   // Token expires in 1 hour
   const expiresIn = 60 * 60; // 1 hour in seconds
@@ -125,8 +138,21 @@ export function getPlaybackToken(playbackId: string): string | null {
     return null;
   }
 
-  // Decode base64 private key
-  const privateKey = Buffer.from(signingPrivateKey, "base64").toString("utf8");
+  // Private key might be base64 encoded or raw PEM format
+  let privateKey: string;
+  try {
+    // Check if it's already in PEM format (starts with -----)
+    if (signingPrivateKey.includes("-----BEGIN")) {
+      privateKey = signingPrivateKey;
+    } else {
+      // Try to decode from base64
+      privateKey = Buffer.from(signingPrivateKey, "base64").toString("utf8");
+    }
+  } catch (error) {
+    console.error("Error processing private key:", error);
+    // Use as-is if processing fails
+    privateKey = signingPrivateKey;
+  }
 
   // Token expires in 1 hour
   const expiresIn = 60 * 60; // 1 hour in seconds

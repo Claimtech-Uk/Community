@@ -83,6 +83,9 @@ export async function POST(request: NextRequest) {
 
     // Create a direct upload URL from Mux
     // The URL expires in 1 hour by default
+    console.log("[Mux Upload] Creating upload for lesson:", lessonId);
+    console.log("[Mux Upload] CORS origin:", process.env.NEXT_PUBLIC_APP_URL);
+    
     const upload = await video.uploads.create({
       cors_origin: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
       new_asset_settings: {
@@ -92,12 +95,17 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    console.log("[Mux Upload] ✅ Upload URL created:", upload.id);
+
     return NextResponse.json({
       uploadId: upload.id,
       uploadUrl: upload.url,
     });
-  } catch (error) {
-    console.error("Mux upload URL error:", error);
+  } catch (error: any) {
+    console.error("[Mux Upload] ❌ Error creating upload URL:", error);
+    console.error("[Mux Upload] Error type:", error.type || error.name);
+    console.error("[Mux Upload] Error message:", error.message);
+    console.error("[Mux Upload] Error response:", error.response?.data);
     
     // Check if it's a configuration error
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
@@ -113,7 +121,12 @@ export async function POST(request: NextRequest) {
     }
     
     return NextResponse.json(
-      { error: "Failed to create upload URL" },
+      { 
+        error: "Failed to create upload URL",
+        details: errorMessage,
+        errorType: error.type || error.name,
+        muxError: error.response?.data || null,
+      },
       { status: 500 }
     );
   }
